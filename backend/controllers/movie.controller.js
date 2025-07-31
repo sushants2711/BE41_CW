@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import movieModel from "../models/movie.model.js";
 
 export const readMovieByTitle = async (req, res) => {
@@ -172,6 +173,46 @@ export const addMovies = async (req, res) => {
       success: true,
       message: "Data created successfully",
       data: data,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+      error: error.message,
+    });
+  }
+};
+
+export const deleteMovie = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Id is missing",
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid ID format",
+      });
+    }
+
+    const deleteMovie = await movieModel.findByIdAndDelete(id);
+
+    if (!deleteMovie) {
+      return res.status(404).json({
+        success: false,
+        message: "Data not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Data deleted successfully",
     });
   } catch (error) {
     return res.status(500).json({
