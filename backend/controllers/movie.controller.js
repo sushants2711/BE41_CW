@@ -222,3 +222,93 @@ export const deleteMovie = async (req, res) => {
     });
   }
 };
+
+export const updateData = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const {
+      title,
+      releaseYear,
+      genre,
+      director,
+      actors,
+      language,
+      country,
+      rating,
+      plot,
+      awards,
+      posterUrl,
+      trailerUrl,
+    } = req.body;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Id is missing",
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid ID format",
+      });
+    }
+
+    if (!title && !releaseYear && !genre && !director && !actors && !language && !country && !rating && !plot && !awards && !posterUrl && !trailerUrl) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "At least one field is required to update the db."
+        })
+    }
+
+    const movieExist = await movieModel.findById(id);
+
+    if (!movieExist) {
+      return res
+        .status(404)
+        .json({
+          success: false,
+          message: "Movie not exist."
+        });
+    };
+
+
+    const data = {
+      title: title || movieExist.title,
+      releaseYear: releaseYear || movieExist.releaseYear,
+      genre: genre || movieExist.genre,
+      director: director || movieExist.director,
+      actors: actors || movieExist.actors,
+      language: language || movieExist.language,
+      country: country || movieExist.country,
+      rating: rating || movieExist.rating,
+      plot: plot || movieExist.plot,
+      awards: awards || movieExist.awards,
+      posterUrl: posterUrl || movieExist.posterUrl,
+      trailerUrl: trailerUrl || movieExist.trailerUrl
+    };
+
+
+    const updateData = await movieModel.findByIdAndUpdate(id, data, { new: true });
+
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: "Data update successfully",
+        data: updateData
+      })
+  } catch (error) {
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Internal Server Error",
+        error: error.message
+      })
+  }
+}
